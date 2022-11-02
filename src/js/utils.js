@@ -3,9 +3,11 @@ const radToDeg = rad => rad * 180 / Math.PI;
 const degToRad = deg => deg * Math.PI / 180;
   
 const computeMatrix = (matrix, config) => {
+    
     matrix.trs.translation = [config.translationX, config.translationY, config.translationZ]
     matrix.trs.rotation = [degToRad(config.rotationX), degToRad(config.rotationY), degToRad(config.rotationZ)]
     matrix.trs.scale = [config.scaleX, config.scaleY, config.scaleZ]
+    console.log( matrix.trs.rotation )
 }
 
 const convertObjectToArray = object => [object.x, object.y, object.z]

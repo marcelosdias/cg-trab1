@@ -152,13 +152,15 @@ function main(option = 0) {
     computeMatrix(nodeInfosByName[selectedObject], config)
 
     //nodeInfosByName[selectedObject].trs.rotation[1] = degToRad(time)
+
+    console.log(nodeInfosByName[selectedObject].trs.rotation)
     
     scene.updateWorldMatrix();
     
     objects.forEach(function(object) {
         object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 
-        object.drawInfo.uniforms.u_world = m4.multiply(object.worldMatrix, m4.yRotation(0));
+        object.drawInfo.uniforms.u_world = m4.multiply(object.worldMatrix, m4.yRotation(degToRad(0)));
 
         object.drawInfo.uniforms.u_worldViewProjection = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 

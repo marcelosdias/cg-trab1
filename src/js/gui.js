@@ -91,7 +91,7 @@ const config = {
       name: `object-${index}`,
       type: "pyramid",
       translation: [0, 0, 90],
-      rotation: [ degToRad(2), degToRad(46.5), degToRad(0)],
+      rotation: [ degToRad(0), degToRad(0), degToRad(0)],
       bufferInfo: pyramidBufferInfo,
       vertexArray: pyramidVAO,
       children: []
@@ -165,15 +165,17 @@ const loadGUI = () => {
 
   gui.add(settings, 'selectedObject', listOfObjects ).onChange(event => {
     selectedObject = event
+
+    console.log(nodeInfosByName[selectedObject].trs)
    
     config.translationX = nodeInfosByName[selectedObject].trs.translation[0]
 
     config.translationY = nodeInfosByName[selectedObject].trs.translation[1]
     config.translationZ = nodeInfosByName[selectedObject].trs.translation[2]
 
-    config.rotationX = nodeInfosByName[selectedObject].trs.rotation[0]
-    config.rotationY = nodeInfosByName[selectedObject].trs.rotation[1]
-    config.rotationZ = nodeInfosByName[selectedObject].trs.rotation[2]
+    config.rotationX = radToDeg(nodeInfosByName[selectedObject].trs.rotation[0])
+    config.rotationY = radToDeg( nodeInfosByName[selectedObject].trs.rotation[1])
+    config.rotationZ = radToDeg(nodeInfosByName[selectedObject].trs.rotation[2])
 
     config.scaleX = nodeInfosByName[selectedObject].trs.scale[0]
     config.scaleY = nodeInfosByName[selectedObject].trs.scale[1]
@@ -194,9 +196,9 @@ const loadGUI = () => {
   createObjects.closed = false
 
   const transformations = gui.addFolder('Transformações')
-  transformations.add(config, "translationX", -150, 150, 0.5);
-  transformations.add(config, "translationY", -100, 100, 0.5);
-  transformations.add(config, "translationZ", -120, 120, 0.5);
+  transformations.add(config, "translationX", -60, 60, 1);
+  transformations.add(config, "translationY", -60, 60, 1);
+  transformations.add(config, "translationZ", -60, 60, 1);
   transformations.add(config, "rotationX", 0, 360, 1);
   transformations.add(config, "rotationY", 0, 360, 1);
   transformations.add(config, "rotationZ", 0, 360, 1);
