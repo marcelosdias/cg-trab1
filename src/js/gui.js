@@ -54,7 +54,7 @@ const config = {
       name: `object-${index}`,
       type: "cube",
       translation: [0, 0, 90],
-      rotation: [ degToRad(2), degToRad(46.5), degToRad(0)],
+      rotation: [degToRad(0), degToRad(0), degToRad(0)],
       bufferInfo: cubeBufferInfo,
       vertexArray: cubeVAO,
       children: []
@@ -112,8 +112,6 @@ const config = {
 
   },
 
-
-
 }
 
 var settings = {
@@ -170,8 +168,6 @@ const loadGUI = () => {
    
     config.translationX = nodeInfosByName[selectedObject].trs.translation[0]
 
-    //sceneDescription.children[teste].translation = []
-
     config.translationY = nodeInfosByName[selectedObject].trs.translation[1]
     config.translationZ = nodeInfosByName[selectedObject].trs.translation[2]
 
@@ -201,9 +197,9 @@ const loadGUI = () => {
   transformations.add(config, "translationX", -150, 150, 0.5);
   transformations.add(config, "translationY", -100, 100, 0.5);
   transformations.add(config, "translationZ", -120, 120, 0.5);
-  transformations.add(config, "rotationX", 0, 500, 0.5);
-  transformations.add(config, "rotationY", 0, 500, 0.5);
-  transformations.add(config, "rotationZ", 0, 500, 0.5);
+  transformations.add(config, "rotationX", 0, 360, 1);
+  transformations.add(config, "rotationY", 0, 360, 1);
+  transformations.add(config, "rotationZ", 0, 360, 1);
   transformations.add(config, "scaleX", -10, 10, 0.5);
   transformations.add(config, "scaleY", -10, 10, 0.5);
   transformations.add(config, "scaleZ", -10, 10, 0.5);

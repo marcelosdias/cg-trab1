@@ -57,8 +57,8 @@ function main(option = 0) {
 
   programInfo = initialize.programInfo
 
-  let cubeNormal = calculateNormal(cubeFormat.position, cubeFormat.indices)
-  let pyramidNormal =  calculateNormal(pyramidFormat.position, pyramidFormat.indices)
+  let cubeNormal = returnNormals(cubeFormat.position, cubeFormat.indices)
+  let pyramidNormal =  returnNormals(pyramidFormat.position, pyramidFormat.indices)
 
   const arrayCube = {
     position: { numComponents: 3, data: cubeFormat.position, },
@@ -95,7 +95,7 @@ function main(option = 0) {
           type: "cube",
           draw: true,
           translation: [0, 0, 0],
-          rotation: [0,0,0],
+          rotation: [degToRad(0), degToRad(0), degToRad(0)],
           bufferInfo: cubeBufferInfo,
           vertexArray: cubeVAO,
           children: [],
@@ -151,14 +151,14 @@ function main(option = 0) {
 
     computeMatrix(nodeInfosByName[selectedObject], config)
 
-    nodeInfosByName[selectedObject].trs.rotation[1] = degToRad(time)
+    //nodeInfosByName[selectedObject].trs.rotation[1] = degToRad(time)
     
     scene.updateWorldMatrix();
     
     objects.forEach(function(object) {
         object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 
-        object.drawInfo.uniforms.u_world = m4.multiply(object.worldMatrix, m4.yRotation(10) );
+        object.drawInfo.uniforms.u_world = m4.multiply(object.worldMatrix, m4.yRotation(0));
 
         object.drawInfo.uniforms.u_worldViewProjection = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 
@@ -166,7 +166,7 @@ function main(option = 0) {
 
         object.drawInfo.uniforms.u_color =  [0.2, 1, 0.2, 1]
 
-        object.drawInfo.uniforms.u_lightWorldPosition = [-2, 0, 100]
+        object.drawInfo.uniforms.u_lightWorldPosition = [0, 0, 100]
 
         object.drawInfo.uniforms.u_viewWorldPosition = convertObjectToArray(arrayCameras[indexCamera].cameraPosition)
 
