@@ -13,6 +13,7 @@ const convertObjectToArray = object => [object.x, object.y, object.z]
 const calculateNormal = (position, indices) => {
     let pontos = []
     let faces = []
+    let resultado
     
     for (let i = 0; i < position.length; i += 3) {
         pontos.push([position[i], position[i+1],position[i+2]])
@@ -24,7 +25,7 @@ const calculateNormal = (position, indices) => {
 
     var normalUsadas = {}
 
-    for (let i = 0, j = 0; i < cubeFormat.position.length; i+=3, j++) {
+    for (let i = 0, j = 0; i < position.length; i+=3, j++) {
         normalUsadas[j] = []
     }
 
@@ -80,8 +81,18 @@ const calculateNormal = (position, indices) => {
         return produto
     })
 
-    return normalUsadas
+
+    let normaisTratadas = []
+
+    for (const item in normalUsadas) {
+        for (let i = 0; i < normalUsadas[item].length; i++) {
+            normaisTratadas.push(normalUsadas[item][i])
+        }
+    }
+
+    return normaisTratadas;
 }
+
 
 const compareArray = (array1, array2) => array1[0] == array2[0] && array1[1] == array2[1] &&array1[2] == array2[2]
 
@@ -132,3 +143,24 @@ const returnVertices = position => {
 }
 
 const returnFirstVertice = position => [position[0], position[1], position[2]]
+
+const returnNormals = (position, indices) => {
+  let cubeNormal = calculateNormal(position, indices)
+
+  let formattedCubeNormal = []
+  
+  for (const item in cubeNormal) {
+      for (let i = 0; i < cubeNormal[item].length; i++) {
+        formattedCubeNormal.push(cubeNormal[item][i])
+      }
+  }
+
+  return formattedCubeNormal
+}
+
+const calculateBarycentric = length => {
+  const n = length / 6
+  const barycentric = []
+  for (let i = 0; i < n; i++) barycentric.push(1, 0, 0, 0, 1, 0, 0, 0, 1)
+  return new Float32Array(barycentric)
+}

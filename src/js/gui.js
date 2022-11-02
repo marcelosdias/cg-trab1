@@ -5,6 +5,8 @@ var selectedVertice = '0'
 
 let indexCamera = 0
 
+let barycentric = false
+
 let objectVertices = returnFirstVertice(cubeFormat.position)
 
 animation = false
@@ -15,8 +17,8 @@ const config = {
   translationY: 0, 
   translationZ: 90,
 
-  rotationX: degToRad(2),
-  rotationY: degToRad(46.5),
+  rotationX: degToRad(0),
+  rotationY: degToRad(0),
   rotationZ: degToRad(0),
 
   scaleX: 1,
@@ -58,8 +60,6 @@ const config = {
       children: []
     });
    
-    console.log(sceneDescription)
-
     objectsToDraw = [];
     objects = [];
     nodeInfosByName = {};
@@ -112,10 +112,13 @@ const config = {
 
   },
 
+
+
 }
 
 var settings = {
   checkbox: false,
+  barycentric: false,
   selectedObject: "object-0",
   indexCamera: 0,
   selectedVertice: 0,
@@ -133,6 +136,34 @@ const loadGUI = () => {
 
   gui = new dat.GUI({closeFolders: false}); 
   gui.closed = false;
+
+  gui.add(settings,'barycentric').listen().onChange(newValue => {
+    barycentric = newValue
+
+    if (barycentric) {
+      const initialize = initializeWebgl(1)
+
+      programInfo = initialize.programInfo
+
+      objectsToDraw = [];
+      objects = [];
+      nodeInfosByName = {};
+
+      scene = makeNode(sceneDescription);
+    } else {
+      const initialize = initializeWebgl(0)
+
+      programInfo = initialize.programInfo
+
+      objectsToDraw = [];
+      objects = [];
+      nodeInfosByName = {};
+
+      scene = makeNode(sceneDescription);
+    }
+
+  })
+
 
   gui.add(settings, 'selectedObject', listOfObjects ).onChange(event => {
     selectedObject = event

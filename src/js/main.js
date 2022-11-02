@@ -8,7 +8,7 @@ var nodeInfosByName = {};
 let arrayCameras = [
   new Camera([0, 0, 100], [0, 0, 0], [0, 1, 0]),
   new Camera([0, 8, 100], [3.5, -23.5, 50.5], [0, 1, 0]),
-  new Camera([5, 2, 100], [0, 0, 0], [0, 1, 0]),
+  new Camera([100, 150, 200], [0, 35, 0], [0, 1, 0]),
 ]
 
 function makeNode(nodeDescription) {
@@ -50,36 +50,32 @@ function makeNodes(nodeDescriptions) {
   return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
 }
 
-function main() {
-  const initialize = initializeWebgl()
+function main(option = 0) {
+  const initialize = initializeWebgl(option)
 
-  const { gl } = initialize
+  let { gl } = initialize
 
   programInfo = initialize.programInfo
 
-  let agoraVai = calculateNormal(cubeFormat.position, cubeFormat.indices)
-
-  
-  let Deus = []
-  
-  for (const item in agoraVai) {
-      for (let i = 0; i < agoraVai[item].length; i++) {
-          Deus.push(agoraVai[item][i])
-      }
-  }
+  let cubeNormal = calculateNormal(cubeFormat.position, cubeFormat.indices)
+  let pyramidNormal =  calculateNormal(pyramidFormat.position, pyramidFormat.indices)
 
   const arrayCube = {
     position: { numComponents: 3, data: cubeFormat.position, },
     indices:{ numComponents: 3, data: cubeFormat.indices, },
-    normal: { numComponents: 3, data: Deus },
+    normal: { numComponents: 3, data: cubeNormal },
     color: { numComponents: 4, data: cubeFormat.color, }
   };
 
   const arrayPyramid = {
     position: { numComponents: 3, data: pyramidFormat.position, },
     indices:{ numComponents: 3, data: pyramidFormat.indices, },
+    normal: { numComponents: 3, data: pyramidNormal },
     color: { numComponents: 4, data: pyramidFormat.color, }
   };
+
+  arrayCube.barycentric = calculateBarycentric(arrayCube.position.data.length)
+  arrayPyramid.barycentric = calculateBarycentric(arrayPyramid.position.data.length)
 
 
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayCube);
@@ -98,7 +94,8 @@ function main() {
           name: "object-0",
           type: "cube",
           draw: true,
-          translation: [0, 0, 90],
+          translation: [0, 0, 0],
+          rotation: [0,0,0],
           bufferInfo: cubeBufferInfo,
           vertexArray: cubeVAO,
           children: [],
@@ -152,38 +149,28 @@ function main() {
 
     const viewProjectionMatrix = m4.multiply(projectionMatrix, arrayCameras[indexCamera].computeMatrix());
 
-    var worldMatrix = m4.yRotation(degToRad(0));
-
-    var worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
-    var worldInverseMatrix = m4.inverse(worldMatrix);
-    var worldInverseTransposeMatrix = m4.transpose(worldInverseMatrix);
-
     computeMatrix(nodeInfosByName[selectedObject], config)
 
-    //nodeInfosByName['Center of the world'].trs.rotation[1] = degToRad(time)
-    //scene.source.rotation[1] = degToRad(time)
-
-    //nodeInfosByName['object-0'].trs.rotation[1] = degToRad(time * 2)
-
+    nodeInfosByName[selectedObject].trs.rotation[1] = degToRad(time)
+    
     scene.updateWorldMatrix();
     
     objects.forEach(function(object) {
-        //object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
         object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 
-        // object.drawInfo.uniforms.u_matrix = m4.multiply(
-        //   viewProjectionMatrix,
-        //   object.worldMatrix
-        // );
+        object.drawInfo.uniforms.u_world = m4.multiply(object.worldMatrix, m4.yRotation(10) );
 
-        object.drawInfo.uniforms.u_worldViewProjection = worldViewProjectionMatrix
-        object.drawInfo.uniforms.u_worldInverseTranspose = worldInverseTransposeMatrix
-        object.drawInfo.uniforms.u_color = [0.2, 1, 0.2, 1] 
-        object.drawInfo.uniforms.u_lightWorldPosition = [config.verticeX, config.verticeY, config.verticeZ]   
-        object.drawInfo.uniforms.u_viewWorldPosition = convertObjectToArray(arrayCameras[0].cameraPosition)
-        object.drawInfo.uniforms.u_shininess = 150
+        object.drawInfo.uniforms.u_worldViewProjection = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 
- 
+        object.drawInfo.uniforms.u_worldInverseTranspose = m4.transpose(m4.inverse(object.worldMatrix));
+
+        object.drawInfo.uniforms.u_color =  [0.2, 1, 0.2, 1]
+
+        object.drawInfo.uniforms.u_lightWorldPosition = [-2, 0, 100]
+
+        object.drawInfo.uniforms.u_viewWorldPosition = convertObjectToArray(arrayCameras[indexCamera].cameraPosition)
+
+        object.drawInfo.uniforms.u_shininess = 300
     });
 
     twgl.drawObjectList(gl, objectsToDraw);
@@ -192,4 +179,4 @@ function main() {
   }
 }
 
-main();
+main(0);
