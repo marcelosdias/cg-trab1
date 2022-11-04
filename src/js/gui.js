@@ -159,14 +159,11 @@ const loadGUI = () => {
 
       scene = makeNode(sceneDescription);
     }
-
   })
 
 
   gui.add(settings, 'selectedObject', listOfObjects ).onChange(event => {
     selectedObject = event
-
-    console.log(nodeInfosByName[selectedObject].trs)
    
     config.translationX = nodeInfosByName[selectedObject].trs.translation[0]
 
@@ -198,7 +195,7 @@ const loadGUI = () => {
   const transformations = gui.addFolder('Transformações')
   transformations.add(config, "translationX", -60, 60, 1);
   transformations.add(config, "translationY", -60, 60, 1);
-  transformations.add(config, "translationZ", -60, 60, 1);
+  transformations.add(config, "translationZ", -90, 90, 1);
   transformations.add(config, "rotationX", 0, 360, 1);
   transformations.add(config, "rotationY", 0, 360, 1);
   transformations.add(config, "rotationZ", 0, 360, 1);
@@ -233,8 +230,7 @@ const loadGUI = () => {
     vertices.add(settings,'checkbox').name('Edit').listen().onChange(newValue => edit = newValue);
 
     vertices.add(settings, 'selectedVertice', listOfVertices).onChange(event => {
-      console.log()
-
+      
       const mapVertices = mapAllVertices(cubeFormat.position, cubeFormat.indices)
 
       returnFirstVertice(cubeFormat.position, cubeFormat.indices)

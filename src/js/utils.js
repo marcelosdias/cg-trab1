@@ -7,11 +7,9 @@ const computeMatrix = (matrix, config) => {
     matrix.trs.translation = [config.translationX, config.translationY, config.translationZ]
     matrix.trs.rotation = [degToRad(config.rotationX), degToRad(config.rotationY), degToRad(config.rotationZ)]
     matrix.trs.scale = [config.scaleX, config.scaleY, config.scaleZ]
-    console.log( matrix.trs.rotation )
 }
 
 const convertObjectToArray = object => [object.x, object.y, object.z]
-
 
 const calculateNormal = (position, indices) => {
   let pontos = []
@@ -155,4 +153,49 @@ const calculateBarycentric = length => {
   const barycentric = []
   for (let i = 0; i < n; i++) barycentric.push(1, 0, 0, 0, 1, 0, 0, 0, 1)
   return new Float32Array(barycentric)
+}
+
+const calculateCenterOfTriangle = (position, triangle) => {
+  const newX = (position[triangle[0] * 3] +  position[triangle[1] * 3] + position[triangle[2] * 3]) / 3
+
+  const newY = (position[(triangle[0] * 3) + 1] +  position[(triangle[1] * 3) + 1] + position[(triangle[2] * 3) + 1]) / 3
+
+  const newZ = (position[(triangle[0] * 3) + 2] +  position[(triangle[1] * 3) + 2] + position[(triangle[2] * 3) + 2]) / 3
+
+  return [newX, newY, newZ]
+}
+
+const createVertice = (position, indices, selectedTriangle) => {
+  let newTriangle = calculateCenterOfTriangle(position, selectedTriangle)
+
+  let arrayPosition = [...position]
+
+  let start = arrayPosition.slice(0, selectedTriangle[0] * 3)
+  let end = arrayPosition.slice((selectedTriangle[2] * 3) + 3, arrayPosition.length)
+
+  let formattedPosition = [    
+    arrayPosition[selectedTriangle[0] * 3],  arrayPosition[selectedTriangle[0] * 3 + 1],  arrayPosition[selectedTriangle[0] * 3 + 2],
+    newTriangle[0], newTriangle[1], newTriangle[2],
+    arrayPosition[selectedTriangle[2] * 3 ],  arrayPosition[selectedTriangle[2] * 3  + 1],  arrayPosition[selectedTriangle[2] * 3  + 2],
+
+    arrayPosition[selectedTriangle[0] * 3 ],  arrayPosition[selectedTriangle[0] * 3  + 1],  arrayPosition[selectedTriangle[0] * 3  + 2],
+    arrayPosition[selectedTriangle[1] * 3],  arrayPosition[selectedTriangle[1] * 3 + 1],  arrayPosition[selectedTriangle[1] * 3 + 2],
+    newTriangle[0], newTriangle[1], newTriangle[2],
+
+
+    arrayPosition[selectedTriangle[1] * 3],  arrayPosition[selectedTriangle[1] * 3 + 1],  arrayPosition[selectedTriangle[1] * 3 + 2],
+    arrayPosition[selectedTriangle[2] * 3 ],  arrayPosition[selectedTriangle[2] * 3  + 1],  arrayPosition[selectedTriangle[2] * 3  + 2],
+    newTriangle[0], newTriangle[1], newTriangle[2],
+  ]
+
+  let newPosition = new Float32Array([...start, ...formattedPosition, ...end])
+  let newIndices = []
+
+  for (let i = 0; i < newPosition.length / 3; i++) {
+    newIndices.push(i)
+  }
+
+  newIndices = new Uint16Array([...newIndices])
+
+  return { newPosition, newIndices }
 }

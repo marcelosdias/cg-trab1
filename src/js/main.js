@@ -5,6 +5,8 @@ var objectsToDraw = [];
 var objects = [];
 var nodeInfosByName = {};
 
+var sceneDescription
+
 let arrayCameras = [
   new Camera([0, 0, 100], [0, 0, 0], [0, 1, 0]),
   new Camera([0, 8, 100], [3.5, -23.5, 50.5], [0, 1, 0]),
@@ -46,6 +48,7 @@ function makeNode(nodeDescription) {
   return node;
 }
 
+
 function makeNodes(nodeDescriptions) {
   return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
 }
@@ -55,7 +58,14 @@ function main(option = 0) {
 
   let { gl } = initialize
 
+  let newCoord
+
   programInfo = initialize.programInfo
+
+  newCoord = createVertice(cubeFormat.position, cubeFormat.indices, [0,1,2])
+  
+  cubeFormat.position = [...newCoord.newPosition]
+  cubeFormat.indices = [...newCoord.newIndices]
 
   let cubeNormal = returnNormals(cubeFormat.position, cubeFormat.indices)
   let pyramidNormal =  returnNormals(pyramidFormat.position, pyramidFormat.indices)
@@ -76,13 +86,15 @@ function main(option = 0) {
 
   arrayCube.barycentric = calculateBarycentric(arrayCube.position.data.length)
   arrayPyramid.barycentric = calculateBarycentric(arrayPyramid.position.data.length)
+  triangleData.barycentric = calculateBarycentric(triangleData.position.length)
 
+  let cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayCube);
+  let pyramidBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayPyramid);
+  let testeBuffer = twgl.createBufferInfoFromArrays(gl, triangleData);
 
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayCube);
-  pyramidBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayPyramid);
-
-  cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-  pyramidVAO = twgl.createVAOFromBufferInfo(gl, programInfo, pyramidBufferInfo);
+  let cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+  let pyramidVAO = twgl.createVAOFromBufferInfo(gl, programInfo, pyramidBufferInfo);
+  let testeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, testeBuffer);
 
   const fieldOfViewRadians = degToRad(60);
 
@@ -152,12 +164,9 @@ function main(option = 0) {
     computeMatrix(nodeInfosByName[selectedObject], config)
 
     //nodeInfosByName[selectedObject].trs.rotation[1] = degToRad(time)
-
-    console.log(nodeInfosByName[selectedObject].trs.rotation)
     
     scene.updateWorldMatrix();
-    
-    objects.forEach(function(object) {
+    objects.forEach(object => {
         object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 
         object.drawInfo.uniforms.u_world = m4.multiply(object.worldMatrix, m4.yRotation(degToRad(0)));
