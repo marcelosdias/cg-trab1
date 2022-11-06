@@ -88,6 +88,8 @@ function main(option = 0) {
 
   requestAnimationFrame(drawScene);
 
+  mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
+
   loadGUI()
 
   function drawScene(time) {
@@ -113,7 +115,7 @@ function main(option = 0) {
 
     if (actualStateEdit) {
 
-      const mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
+      //const mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
 
       for (let i = 0; i < mapVertices[settings.selectedVertice].length; i++) {
         let realVertice = mapVertices[settings.selectedVertice][i] * 3

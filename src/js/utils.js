@@ -112,9 +112,9 @@ const mapAllVertices = (position, indices) => {
     faces.map(item => {
       item.map(vertice => {
         if (compareArray(pontos[mapVertices[index]], pontos[vertice])) 
-          if (!alreadyExist(finalMap[index], vertice))
+          if (!alreadyExist(finalMap[index], vertice)) 
             finalMap[index].push(vertice)
-
+  
         return finalMap
       })
     })
@@ -126,7 +126,7 @@ const mapAllVertices = (position, indices) => {
 const returnVertices = position => {
   let newArray = []
 
-  for (let i = 0; i < position.length / 9; i++)
+  for (let i = 0; i < position.length / 3; i++)
     newArray.push(i)
 
   return newArray

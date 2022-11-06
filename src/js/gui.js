@@ -6,8 +6,9 @@ let indexCamera = 0
 
 let barycentric = false
 
-animation = false
 let actualStateEdit = false
+
+let mapVertices = []
 
 const config = { 
   translationX: 0,
@@ -152,8 +153,10 @@ const config = {
 
     scene = makeNode(sceneDescription)
 
-    listOfTriangles = returnTriangles(newBuffer.indices.data)
-    listOfVertices = returnVertices(newBuffer.position.data)
+    listOfTriangles = returnTriangles(nodeInfosByName[selectedObject].format.indices.data)
+    listOfVertices = returnVertices(nodeInfosByName[selectedObject].format.position.data)
+
+    mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
 
     gui.destroy();
     gui = null
@@ -206,6 +209,8 @@ const loadGUI = () => {
 
     listOfVertices = returnVertices(nodeInfosByName[selectedObject].format.position.data)
     listOfTriangles = returnTriangles(nodeInfosByName[selectedObject].format.indices.data)
+
+    mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
 
     settings.selectedTriangle = 0
 
@@ -307,17 +312,14 @@ const loadGUI = () => {
     })
 
     vertices.add(settings, 'selectedVertice', listOfVertices).onChange(event => {
-      const mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
+
+      listOfVertices = returnVertices(nodeInfosByName[selectedObject].format.position.data)
 
       settings.selectedVertice = event
 
-      for (let i = 0; i < mapVertices[settings.selectedVertice].length; i++) {
-        let realVertice = mapVertices[settings.selectedVertice][i] * 3
-
-        config.verticeX = nodeInfosByName[selectedObject].format.position.data[realVertice] 
-        config.verticeY = nodeInfosByName[selectedObject].format.position.data[realVertice+1] 
-        config.verticeZ = nodeInfosByName[selectedObject].format.position.data[realVertice+2] 
-      }    
+      config.verticeX = nodeInfosByName[selectedObject].format.position.data[settings.selectedVertice * 3] 
+      config.verticeY = nodeInfosByName[selectedObject].format.position.data[settings.selectedVertice * 3 + 1] 
+      config.verticeZ = nodeInfosByName[selectedObject].format.position.data[settings.selectedVertice * 3 + 2] 
 
       gui.destroy();
       gui = null
