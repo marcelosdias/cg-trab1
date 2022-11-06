@@ -7,6 +7,8 @@ var nodeInfosByName = {};
 
 var sceneDescription
 
+var arrayCube = {}
+
 let arrayCameras = [
   new Camera([0, 0, 100], [0, 0, 0], [0, 1, 0]),
   new Camera([0, 8, 100], [3.5, -23.5, 50.5], [0, 1, 0]),
@@ -20,22 +22,26 @@ function makeNode(nodeDescription) {
   nodeInfosByName[nodeDescription.name] = {
     trs: trs,
     node: node,
+    format: nodeDescription.format
   };
 
   trs.translation = nodeDescription.translation || trs.translation;
+
   trs.rotation = nodeDescription.rotation || trs.rotation;
 
   if (nodeDescription.draw !== false) {
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, nodeDescription.format);
+  
+    const vertexArray = twgl.createVAOFromBufferInfo(gl, programInfo, bufferInfo);
     
       node.drawInfo = {
           uniforms: {
-              // u_colorOffset: [0, 0, 0.6, 0],
-              // u_colorMult: [0.4, 0.4, 0.4, 1],
               u_color: [0.2, 1, 0.2, 1],
           },
-          programInfo: programInfo,
-          bufferInfo: nodeDescription.bufferInfo,
-          vertexArray: nodeDescription.vertexArray,
+          format: nodeDescription.format,
+          programInfo,
+          bufferInfo,
+          vertexArray,
       };
       objectsToDraw.push(node.drawInfo);
       objects.push(node);
@@ -48,55 +54,18 @@ function makeNode(nodeDescription) {
   return node;
 }
 
-
-function makeNodes(nodeDescriptions) {
-  return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
-}
+const makeNodes = nodeDescriptions =>nodeDescriptions ? nodeDescriptions.map(makeNode) : []
 
 function main(option = 0) {
   const initialize = initializeWebgl(option)
 
-  let { gl } = initialize
-
-  let newCoord
+   gl = initialize.gl
 
   programInfo = initialize.programInfo
 
-  newCoord = createVertice(cubeFormat.position, cubeFormat.indices, [0,1,2])
-  
-  cubeFormat.position = [...newCoord.newPosition]
-  cubeFormat.indices = [...newCoord.newIndices]
-
-  let cubeNormal = returnNormals(cubeFormat.position, cubeFormat.indices)
-  let pyramidNormal =  returnNormals(pyramidFormat.position, pyramidFormat.indices)
-
-  const arrayCube = {
-    position: { numComponents: 3, data: cubeFormat.position, },
-    indices:{ numComponents: 3, data: cubeFormat.indices, },
-    normal: { numComponents: 3, data: cubeNormal },
-    color: { numComponents: 4, data: cubeFormat.color, }
-  };
-
-  const arrayPyramid = {
-    position: { numComponents: 3, data: pyramidFormat.position, },
-    indices:{ numComponents: 3, data: pyramidFormat.indices, },
-    normal: { numComponents: 3, data: pyramidNormal },
-    color: { numComponents: 4, data: pyramidFormat.color, }
-  };
-
-  arrayCube.barycentric = calculateBarycentric(arrayCube.position.data.length)
-  arrayPyramid.barycentric = calculateBarycentric(arrayPyramid.position.data.length)
-  triangleData.barycentric = calculateBarycentric(triangleData.position.length)
-
-  let cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayCube);
-  let pyramidBufferInfo = twgl.createBufferInfoFromArrays(gl, arrayPyramid);
-  let testeBuffer = twgl.createBufferInfoFromArrays(gl, triangleData);
-
-  let cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-  let pyramidVAO = twgl.createVAOFromBufferInfo(gl, programInfo, pyramidBufferInfo);
-  let testeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, testeBuffer);
-
   const fieldOfViewRadians = degToRad(60);
+
+  const arrayCube = createArray('cube')
 
   sceneDescription = {
     name: "Center of the world",
@@ -104,18 +73,18 @@ function main(option = 0) {
       children: [
         {
           name: "object-0",
-          type: "cube",
           draw: true,
           translation: [0, 0, 0],
           rotation: [degToRad(0), degToRad(0), degToRad(0)],
-          bufferInfo: cubeBufferInfo,
-          vertexArray: cubeVAO,
+          format: arrayCube,
           children: [],
         }
     ]
   }
 
-  scene = makeNode(sceneDescription);
+  scene = makeNode(sceneDescription)
+
+  listOfTriangles = returnTriangles(nodeInfosByName[selectedObject].format.indices.data)
 
   requestAnimationFrame(drawScene);
 
@@ -126,7 +95,7 @@ function main(option = 0) {
 
     if (gui == null)
       loadGUI()
-
+      
     twgl.resizeCanvasToDisplaySize(gl.canvas);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -137,35 +106,49 @@ function main(option = 0) {
     gl.disable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
-    if (edit) {
-      const mapVertices = mapAllVertices(cubeFormat.position, cubeFormat.indices)
-  
-      for (let i = 0; i < mapVertices[selectedVertice].length; i++) {
-        let realVertice = mapVertices[selectedVertice][i] * 3
-  
-        cubeFormat.position[realVertice] = config.verticeX
-        cubeFormat.position[realVertice+1] = config.verticeY
-        cubeFormat.position[realVertice+2] = config.verticeZ
-      }
-    
-      cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, cubeFormat);
-      cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-
-      index = selectedObject.split('-')[1]
-      objectsToDraw[index].bufferInfo = cubeBufferInfo
-      objectsToDraw[index].vertexArray = cubeVAO
-    }
-
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
     const viewProjectionMatrix = m4.multiply(projectionMatrix, arrayCameras[indexCamera].computeMatrix());
 
+    if (actualStateEdit) {
+
+      const mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
+
+      for (let i = 0; i < mapVertices[settings.selectedVertice].length; i++) {
+        let realVertice = mapVertices[settings.selectedVertice][i] * 3
+  
+        nodeInfosByName[selectedObject].format.position.data[realVertice] = config.verticeX
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 1] = config.verticeY
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 2] = config.verticeZ
+      }
+
+      let index = selectedObject.split('-')[1]
+
+      const updatedValues = sceneDescription.children.map(item => {
+        let name = item.name
+  
+        item.translation = nodeInfosByName[name].trs.translation
+        item.rotation = nodeInfosByName[name].trs.rotation
+        item.format = nodeInfosByName[name].format
+        return item
+      })
+  
+      sceneDescription.children = [...updatedValues]
+
+      sceneDescription.children[index].format = nodeInfosByName[selectedObject].format
+
+      objectsToDraw = [];
+      objects = [];
+      nodeInfosByName = {};
+
+      scene = makeNode(sceneDescription)
+    }
+
     computeMatrix(nodeInfosByName[selectedObject], config)
 
-    //nodeInfosByName[selectedObject].trs.rotation[1] = degToRad(time)
-    
     scene.updateWorldMatrix();
+
     objects.forEach(object => {
         object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
 

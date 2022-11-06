@@ -25,7 +25,7 @@ const calculateNormal = (position, indices) => {
 
   var normalUsadas = {}
 
-  for (let i = 0, j = 0; i < cubeFormat.position.length; i+=3, j++) {
+  for (let i = 0, j = 0; i < position.length; i+=3, j++) {
       normalUsadas[j] = []
   }
 
@@ -165,7 +165,11 @@ const calculateCenterOfTriangle = (position, triangle) => {
   return [newX, newY, newZ]
 }
 
-const createVertice = (position, indices, selectedTriangle) => {
+const createVertice = (position, indices, triangle) => {
+
+  let selectedTriangle = [triangle * 3, triangle * 3 + 1, triangle * 3 + 2]
+  console.log(selectedTriangle)
+
   let newTriangle = calculateCenterOfTriangle(position, selectedTriangle)
 
   let arrayPosition = [...position]
@@ -198,4 +202,29 @@ const createVertice = (position, indices, selectedTriangle) => {
   newIndices = new Uint16Array([...newIndices])
 
   return { newPosition, newIndices }
+}
+
+const returnTriangles = indices => {
+  let arrayIndices = []
+
+  for (let i = 0; i < indices.length / 3; i++)
+    arrayIndices.push(i)
+
+  return arrayIndices
+}
+
+const createArray = type =>   {
+  const copyFormat = type == 'cube' ? JSON.parse(JSON.stringify(cubeFormat)) : JSON.parse(JSON.stringify(pyramidFormat))
+
+  let cubeNormal = returnNormals(copyFormat.position, copyFormat.indices)
+
+  const newArray = {
+    position: { numComponents: 3, data: copyFormat.position, },
+    indices:{ numComponents: 3, data: copyFormat.indices, },
+    normal: { numComponents: 3, data: cubeNormal },
+  }
+
+  newArray.barycentric = calculateBarycentric(newArray.position.data.length)
+
+  return newArray
 }
