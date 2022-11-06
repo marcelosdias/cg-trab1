@@ -10,6 +10,10 @@ let actualStateEdit = false
 
 let mapVertices = []
 
+let listOfAnimation = []
+
+let isFirstAnimation = true
+
 const config = { 
   translationX: 0,
   translationY: 0, 
@@ -36,7 +40,21 @@ const config = {
   verticeY: 0,
   verticeZ: 0,
 
+  value: 0,
+  distance: 0,
+  position: 0,
+
   listOfTriangles: [],
+
+  selectedType: 'translation-X',
+
+  listOfAnimations: ['translation-X', 'translation-Y', 'translation-Z', 'rotation-X', 'rotation-Y', 'rotation-Z'],
+  animation: 0,
+  animationX: 0,
+  animationY: 1,
+  animationZ: 2,
+  isAnimation: false,
+
 
   Cube: () => {
     const updatedValues = sceneDescription.children.map(item => {
@@ -160,7 +178,24 @@ const config = {
 
     gui.destroy();
     gui = null
+  },
+
+  createAnimation() {
+    const newAnimation = {
+      type: config.selectedType,
+      animation: config.animation,
+      position: config.position,
+      value: config.value,
+    }
+
+    
+    listOfAnimation.push(newAnimation)
+  },
+
+  playAnimation() {
+    config.isAnimation = !config.isAnimation 
   }
+
 }
 
 var settings = {
@@ -170,7 +205,6 @@ var settings = {
   selectedTriangle: 0,
   indexCamera: 0,
   selectedVertice: -1,
-  
 };
 
 var gui = null
@@ -239,8 +273,30 @@ const loadGUI = () => {
     transformations.add(config, "scaleZ", -10, 10, 0.5);
     transformations.closed = false
 
+  const animations = allObjects.addFolder('Animações')
+    animations.add(config, "selectedType", config.listOfAnimations).onChange(event => {
+      let type = event.split('-')[1]
+
+      if (type === 'X')
+        config.animation = 0
+      
+      if (type === 'Y')
+        config.animation = 1
+
+      if (type === 'Z')
+        config.animation = 2
+
+      config.selectedType = event
+    })
+    animations.add(config, "value", 0, 5, 0.25)
+    animations.add(config, "position", -60, 60, 1)
+    animations.add(config, "createAnimation");
+    animations.add(config, 'playAnimation')
+
+    animations.closed = false
+
   const createVertice = allObjects.addFolder('Criar Vértices')
-    createVertice.add(settings,'barycentric').listen().onChange(newValue => {
+    createVertice.add(settings,'barycentric').onChange(newValue => {
       barycentric = newValue
 
       if (barycentric) {

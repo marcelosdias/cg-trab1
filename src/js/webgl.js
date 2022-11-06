@@ -1,6 +1,6 @@
 "use strict";
 
-var vertexShader = `#version 300 es
+const vertexShader = `#version 300 es
 
 // an attribute is an input (in) to a vertex shader.
 // It will receive data from a buffer
@@ -40,7 +40,7 @@ void main() {
 }
 `;
 
-var fragmentShader = `#version 300 es
+const fragmentShader = `#version 300 es
 
 precision highp float;
 
@@ -84,7 +84,7 @@ void main() {
 }
 `;
 
-var vsw = `
+const vertexShaderWireframe = `
 attribute vec4 a_position;
 attribute vec3 a_barycentric;
 uniform mat4 u_matrix;
@@ -94,7 +94,7 @@ void main() {
   gl_Position = u_matrix * a_position;
 }`;
 
-var fsw = `
+const fragmentShaderWireframe = `
 precision mediump float;
 varying vec3 vbc;
 void main() {
@@ -112,7 +112,7 @@ const initializeWebgl = option => {
 
     if (!gl) return;
         
-    const  programInfo = option == 0 ?  twgl.createProgramInfo(gl, [vertexShader, fragmentShader]) :  twgl.createProgramInfo(gl, [vsw, fsw]);
+    const  programInfo = option == 0 ?  twgl.createProgramInfo(gl, [vertexShader, fragmentShader]) :  twgl.createProgramInfo(gl, [vertexShaderWireframe, fragmentShaderWireframe]);
    
     twgl.setAttributePrefix("a_");
 

@@ -14,7 +14,7 @@ let arrayCameras = [
   new Camera([0, 8, 100], [3.5, -23.5, 50.5], [0, 1, 0]),
   new Camera([100, 150, 200], [0, 35, 0], [0, 1, 0]),
 ]
-
+var batata
 function makeNode(nodeDescription) {
   let trs = new TRS();
   let node = new Node(trs);
@@ -54,13 +54,13 @@ function makeNode(nodeDescription) {
   return node;
 }
 
-const makeNodes = nodeDescriptions =>nodeDescriptions ? nodeDescriptions.map(makeNode) : []
+const makeNodes = nodeDescriptions => nodeDescriptions ? nodeDescriptions.map(makeNode) : []
 
 function main(option = 0) {
   const initialize = initializeWebgl(option)
 
-   gl = initialize.gl
-
+  gl = initialize.gl
+  
   programInfo = initialize.programInfo
 
   const fieldOfViewRadians = degToRad(60);
@@ -74,7 +74,7 @@ function main(option = 0) {
         {
           name: "object-0",
           draw: true,
-          translation: [0, 0, 0],
+          translation: [0, 0, 90],
           rotation: [degToRad(0), degToRad(0), degToRad(0)],
           format: arrayCube,
           children: [],
@@ -92,9 +92,8 @@ function main(option = 0) {
 
   loadGUI()
 
-  function drawScene(time) {
-    time = time * 0.05;
 
+  function drawScene(now) {
     if (gui == null)
       loadGUI()
       
@@ -146,8 +145,109 @@ function main(option = 0) {
 
       scene = makeNode(sceneDescription)
     }
+    if (config.isAnimation) {
+      if (isFirstAnimation) {
+        now *= 0.001;
+        then = now;
+        isFirstAnimation = false
+      }
+
+      // Convert the time to seconds
+      now *= 0.001;
+      // Subtract the previous time from the current time
+      var deltaTime = now - then;
+      // Remember the current time for the next frame.
+      then = now;
+
+      let velocidade = listOfAnimation[0].value * deltaTime
+
+      let selectedType = listOfAnimation[0].type.split('-')[0]
+
+      if (selectedType === 'translation') {
+        if (listOfAnimation[0].position > 0) {
+          if (nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] >= listOfAnimation[0].position) {
+            listOfAnimation.shift()
+
+            config.isAnimation = false
+
+          } else {
+            if (listOfAnimation[0].animation == 0)
+              config.translationX += velocidade
+
+            if (listOfAnimation[0].animation == 1) {
+              config.translationY += velocidade
+            }
+
+            if (listOfAnimation[0].animation == 2)
+              config.translationZ += velocidade
+          }
+        } else {
+          if (nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] <= listOfAnimation[0].position) {
+            listOfAnimation.shift()
+
+            config.isAnimation = false
+          } else {
+            if (listOfAnimation[0].animation == 0)
+              config.translationX -= velocidade
+
+            if (listOfAnimation[0].animation == 1)
+              config.translationY -= velocidade
+            
+            if (listOfAnimation[0].animation == 2)
+              config.translationZ -= velocidade
+          }
+        }
+      } else if (selectedType === 'rotation') {
+        if (listOfAnimation[0].position > 0) {
+          if (nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] >= listOfAnimation[0].position) {
+            listOfAnimation.shift()
+
+            config.isAnimation = false
+
+          } else {
+            if (listOfAnimation[0].animation == 0) {
+              config.rotationX +=  velocidade
+            }
+
+            if (listOfAnimation[0].animation == 1)
+              config.rotationY += velocidade
+
+            if (listOfAnimation[0].animation == 2)
+              config.rotationZ += velocidade
+          }
+        } else {
+          if (nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] <= listOfAnimation[0].position) {
+            listOfAnimation.shift()
+
+            config.isAnimation = false
+          } else {
+            if (listOfAnimation[0].animation == 0)
+              config.rotationX -= velocidade
+
+            if (listOfAnimation[0].animation == 1)
+              config.rotationY -= velocidade
+            
+            if (listOfAnimation[0].animation == 2)
+              config.rotationZ -= velocidade
+          }
+        }
+      }
+
+
+
+      if (config.isAnimation == false && listOfAnimation.length > 0) {
+        config.isAnimation = true
+      } else {
+        if (config.isAnimation == false) {
+          isFirstAnimation = true
+          gui.destroy();
+          gui = null
+        }
+      }
+    }
 
     computeMatrix(nodeInfosByName[selectedObject], config)
+    
 
     scene.updateWorldMatrix();
 
@@ -166,7 +266,7 @@ function main(option = 0) {
 
         object.drawInfo.uniforms.u_viewWorldPosition = convertObjectToArray(arrayCameras[indexCamera].cameraPosition)
 
-        object.drawInfo.uniforms.u_shininess = 300
+        object.drawInfo.uniforms.u_shininess = 300 
     });
 
     twgl.drawObjectList(gl, objectsToDraw);
