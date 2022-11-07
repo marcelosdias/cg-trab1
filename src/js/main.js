@@ -92,7 +92,6 @@ function main(option = 0) {
 
   loadGUI()
 
-
   function drawScene(now) {
     if (gui == null)
       loadGUI()
@@ -112,10 +111,78 @@ function main(option = 0) {
 
     const viewProjectionMatrix = m4.multiply(projectionMatrix, arrayCameras[indexCamera].computeMatrix());
 
+    if (settings.actualStateTriangleEdit) {
+      let indice = parseInt(settings.selectedTriangle)
+
+      let indicesTriangule = [
+        nodeInfosByName[selectedObject].format.indices.data[indice],
+        nodeInfosByName[selectedObject].format.indices.data[indice + 1],
+        nodeInfosByName[selectedObject].format.indices.data[indice + 2],
+      ]
+  
+      for (let i = 0; i < mapVertices[indicesTriangule[0]].length; i++) {
+        let realVertice = mapVertices[indicesTriangule[0]][i] * 3
+  
+        nodeInfosByName[selectedObject].format.position.data[realVertice] += config.trianguleX
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 1] += config.trianguleY
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 2] += config.trianguleZ
+      }
+
+      for (let i = 0; i < mapVertices[indicesTriangule[1]].length; i++) {
+        let realVertice = mapVertices[indicesTriangule[1]][i] * 3
+  
+        nodeInfosByName[selectedObject].format.position.data[realVertice] += config.trianguleX
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 1] += config.trianguleY
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 2] += config.trianguleZ
+      }
+
+      for (let i = 0; i < mapVertices[indicesTriangule[2]].length; i++) {
+        let realVertice = mapVertices[indicesTriangule[2]][i] * 3
+  
+        nodeInfosByName[selectedObject].format.position.data[realVertice] += config.trianguleX
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 1] += config.trianguleY
+        nodeInfosByName[selectedObject].format.position.data[realVertice + 2] += config.trianguleZ
+      }
+
+      // for (let i = 0; i < mapVertices[indicesTriangule[1]].length; i++) {
+      //   let realVertice = mapVertices[indicesTriangule[1]][i] * 3
+  
+      //   nodeInfosByName[selectedObject].format.position.data[realVertice] = config.trianguleX
+      //   nodeInfosByName[selectedObject].format.position.data[realVertice + 1] = config.trianguleY
+      //   nodeInfosByName[selectedObject].format.position.data[realVertice + 2] = config.trianguleZ
+      // }
+
+      // for (let i = 0; i < mapVertices[indicesTriangule[2]].length; i++) {
+      //   let realVertice = mapVertices[indicesTriangule[2]][i] * 3
+  
+      //   nodeInfosByName[selectedObject].format.position.data[realVertice] = config.trianguleX
+      //   nodeInfosByName[selectedObject].format.position.data[realVertice + 1] = config.trianguleY
+      //   nodeInfosByName[selectedObject].format.position.data[realVertice + 2] = config.trianguleZ
+      // }
+
+      let index = selectedObject.split('-')[1]
+
+      const updatedValues = sceneDescription.children.map(item => {
+        let name = item.name
+  
+        item.translation = nodeInfosByName[name].trs.translation
+        item.rotation = nodeInfosByName[name].trs.rotation
+        item.format = nodeInfosByName[name].format
+        return item
+      })
+  
+      sceneDescription.children = [...updatedValues]
+
+      sceneDescription.children[index].format = nodeInfosByName[selectedObject].format
+
+      objectsToDraw = [];
+      objects = [];
+      nodeInfosByName = {};
+
+      scene = makeNode(sceneDescription)
+    }
+
     if (actualStateEdit) {
-
-      //const mapVertices = mapAllVertices(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
-
       for (let i = 0; i < mapVertices[settings.selectedVertice].length; i++) {
         let realVertice = mapVertices[settings.selectedVertice][i] * 3
   
@@ -145,11 +212,20 @@ function main(option = 0) {
 
       scene = makeNode(sceneDescription)
     }
+
     if (config.isAnimation) {
       if (isFirstAnimation) {
         now *= 0.001;
         then = now;
         isFirstAnimation = false
+
+        let selectedType = listOfAnimation[0].type.split('-')[0]
+
+        if (selectedType == 'translation')
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] + listOfAnimation[0].position
+        else
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] + listOfAnimation[0].position
+
       }
 
       // Convert the time to seconds
@@ -163,92 +239,51 @@ function main(option = 0) {
 
       let selectedType = listOfAnimation[0].type.split('-')[0]
 
-      if (selectedType === 'translation') {
-        if (listOfAnimation[0].position > 0) {
-          if (nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] >= listOfAnimation[0].position) {
-            listOfAnimation.shift()
-
-            config.isAnimation = false
-
-          } else {
-            if (listOfAnimation[0].animation == 0)
-              config.translationX += velocidade
-
-            if (listOfAnimation[0].animation == 1) {
-              config.translationY += velocidade
-            }
-
-            if (listOfAnimation[0].animation == 2)
-              config.translationZ += velocidade
-          }
-        } else {
-          if (nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] <= listOfAnimation[0].position) {
-            listOfAnimation.shift()
-
-            config.isAnimation = false
-          } else {
-            if (listOfAnimation[0].animation == 0)
-              config.translationX -= velocidade
-
-            if (listOfAnimation[0].animation == 1)
-              config.translationY -= velocidade
-            
-            if (listOfAnimation[0].animation == 2)
-              config.translationZ -= velocidade
-          }
-        }
-      } else if (selectedType === 'rotation') {
-        if (listOfAnimation[0].position > 0) {
-          if (nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] >= listOfAnimation[0].position) {
-            listOfAnimation.shift()
-
-            config.isAnimation = false
-
-          } else {
-            if (listOfAnimation[0].animation == 0) {
-              config.rotationX +=  velocidade
-            }
-
-            if (listOfAnimation[0].animation == 1)
-              config.rotationY += velocidade
-
-            if (listOfAnimation[0].animation == 2)
-              config.rotationZ += velocidade
-          }
-        } else {
-          if (nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] <= listOfAnimation[0].position) {
-            listOfAnimation.shift()
-
-            config.isAnimation = false
-          } else {
-            if (listOfAnimation[0].animation == 0)
-              config.rotationX -= velocidade
-
-            if (listOfAnimation[0].animation == 1)
-              config.rotationY -= velocidade
-            
-            if (listOfAnimation[0].animation == 2)
-              config.rotationZ -= velocidade
-          }
-        }
-      }
-
-
-
-      if (config.isAnimation == false && listOfAnimation.length > 0) {
-        config.isAnimation = true
-      } else {
-        if (config.isAnimation == false) {
-          isFirstAnimation = true
-          gui.destroy();
-          gui = null
-        }
-      }
+      animation(selectedType, velocidade, nodeInfosByName[selectedObject], 0)
     }
 
-    computeMatrix(nodeInfosByName[selectedObject], config)
-    
+    if (config.allAnimation) {
+      if (isFirstAnimation) {
+        now *= 0.001;
+        then = now;
+        isFirstAnimation = false
 
+        let selectedType = listOfAnimation[0].type.split('-')[0]
+
+        if (selectedType == 'translation')
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] + listOfAnimation[0].position
+        else
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] + listOfAnimation[0].position
+      }
+
+      now *= 0.001;
+      
+      var deltaTime = now - then;
+
+      then = now;
+
+      let velocidade = listOfAnimation[0].value * deltaTime
+
+      let selectedType = listOfAnimation[0].type.split('-')[0]
+
+    for (const [key, value] of Object.entries(nodeInfosByName)) {
+        if (key !== 'Center of the world' && config.allAnimation == true) {
+          animation(selectedType, velocidade, nodeInfosByName[key], 1)
+          computeMatrix(nodeInfosByName[key], config)
+          if (!config.allAnimation) {
+            config.translationX = nodeInfosByName[selectedObject].trs.translation[0]
+            config.translationY = nodeInfosByName[selectedObject].trs.translation[1]
+            config.translationZ = nodeInfosByName[selectedObject].trs.translation[2]
+
+            config.rotationX = radToDeg(nodeInfosByName[selectedObject].trs.rotation[0])
+            config.rotationY = radToDeg(nodeInfosByName[selectedObject].trs.rotation[1])
+            config.rotationZ = radToDeg(nodeInfosByName[selectedObject].trs.rotation[2])
+          }
+        }
+      } 
+    } else {
+      computeMatrix(nodeInfosByName[selectedObject], config)
+    }
     scene.updateWorldMatrix();
 
     objects.forEach(object => {

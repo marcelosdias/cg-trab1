@@ -14,6 +14,8 @@ let listOfAnimation = []
 
 let isFirstAnimation = true
 
+let listOfTriangles = []
+
 const config = { 
   translationX: 0,
   translationY: 0, 
@@ -35,16 +37,18 @@ const config = {
   targetY: 0,
   targetZ: 0,
 
-  // Ajustar depois 
+  //Ajustar depois 
   verticeX: 0,
   verticeY: 0,
   verticeZ: 0,
 
+  trianguleX: 0,
+  trianguleY: 0,
+  trianguleZ: 0,
+
   value: 0,
   distance: 0,
   position: 0,
-
-  listOfTriangles: [],
 
   selectedType: 'translation-X',
 
@@ -53,8 +57,9 @@ const config = {
   animationX: 0,
   animationY: 1,
   animationZ: 2,
+  
   isAnimation: false,
-
+  allAnimation: false,
 
   Cube: () => {
     const updatedValues = sceneDescription.children.map(item => {
@@ -186,6 +191,7 @@ const config = {
       animation: config.animation,
       position: config.position,
       value: config.value,
+      total: 0
     }
 
     
@@ -194,17 +200,25 @@ const config = {
 
   playAnimation() {
     config.isAnimation = !config.isAnimation 
+  },
+
+  playAllAnimation() {
+    config.allAnimation = !config.allAnimation
   }
+
+
 
 }
 
 var settings = {
   actualStateEdit: false,
+  actualStateTriangleEdit: false,
   barycentric: false,
   selectedObject: "object-0",
   selectedTriangle: 0,
   indexCamera: 0,
   selectedVertice: -1,
+
 };
 
 var gui = null
@@ -223,7 +237,6 @@ const loadGUI = () => {
     selectedObject = event
    
     config.translationX = nodeInfosByName[selectedObject].trs.translation[0]
-
     config.translationY = nodeInfosByName[selectedObject].trs.translation[1]
     config.translationZ = nodeInfosByName[selectedObject].trs.translation[2]
 
@@ -292,6 +305,8 @@ const loadGUI = () => {
     animations.add(config, "position", -60, 60, 1)
     animations.add(config, "createAnimation");
     animations.add(config, 'playAnimation')
+    animations.add(config, 'playAllAnimation')
+
 
     animations.closed = false
 
@@ -362,9 +377,8 @@ const loadGUI = () => {
     vertices.add(settings, 'actualStateEdit').name('Edit').listen().onChange(newValue => {
       actualStateEdit = settings.selectedVertice !== -1 ? newValue : false
 
-      //if (actualStateEdit == false && settings.selectedVertice !== -1) 
-        //nodeInfosByName[selectedObject].format.normal = returnNormals(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
-      
+      if (actualStateEdit == false && settings.selectedVertice !== -1) 
+        nodeInfosByName[selectedObject].format.normal = returnNormals(nodeInfosByName[selectedObject].format.position.data, nodeInfosByName[selectedObject].format.indices.data)
     })
 
     vertices.add(settings, 'selectedVertice', listOfVertices).onChange(event => {
@@ -386,6 +400,5 @@ const loadGUI = () => {
       vertices.add(config, "verticeZ", -10, 10, 0.5);
 
       vertices.closed = false
-
 }
 

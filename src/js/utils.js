@@ -167,8 +167,6 @@ const calculateCenterOfTriangle = (position, triangle) => {
 const createVertice = (position, indices, triangle) => {
 
   let selectedTriangle = [triangle * 3, triangle * 3 + 1, triangle * 3 + 2]
-  console.log(selectedTriangle)
-
   let newTriangle = calculateCenterOfTriangle(position, selectedTriangle)
 
   let arrayPosition = [...position]
@@ -226,4 +224,150 @@ const createArray = type =>   {
   newArray.barycentric = calculateBarycentric(newArray.position.data.length)
 
   return newArray
+}
+
+const animation = (selectedType, velocidade, object, type) => {
+  config.translationX = object.trs.translation[0]
+  config.translationY = object.trs.translation[1]
+  config.translationZ = object.trs.translation[2]
+
+  config.rotationX = radToDeg(object.trs.rotation[0])
+  config.rotationY = radToDeg(object.trs.rotation[1])
+  config.rotationZ = radToDeg(object.trs.rotation[2])
+  
+  if (selectedType === 'translation') {
+    if (listOfAnimation[0].position > 0) {
+      //if (object.trs.translation[listOfAnimation[0].animation] >= listOfAnimation[0].total) {
+      if (nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] >= listOfAnimation[0].total) {
+
+        listOfAnimation.shift()
+
+        if (listOfAnimation.length > 0) {
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] + listOfAnimation[0].position
+          if (type == 0) 
+            config.isAnimation = true
+          else
+            config.allAnimation = true
+      }
+      else {
+        if (type == 0)
+          config.isAnimation = false
+        else
+          config.allAnimation = false
+      }
+      } else {
+        if (listOfAnimation[0].animation == 0) {
+          config.translationX += velocidade
+        }
+
+        if (listOfAnimation[0].animation == 1) 
+          config.translationY = object.trs.translation[1] + velocidade        
+
+        if (listOfAnimation[0].animation == 2)
+          config.translationZ = object.trs.translation[2] + velocidade      
+      }
+    } else {
+      //if (object.trs.translation[listOfAnimation[0].animation] <= listOfAnimation[0].total) {
+        if (nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] <= listOfAnimation[0].total) {
+        listOfAnimation.shift()
+        if (listOfAnimation.length > 0) {
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.translation[listOfAnimation[0].animation] + listOfAnimation[0].position
+          if (type == 0)
+            config.isAnimation = true
+          else
+            config.allAnimation = true
+        }
+        else {
+          if (type == 0)
+            config.isAnimation = false
+          else
+            config.allAnimation = false
+        }
+      } else {
+        if (listOfAnimation[0].animation == 0) 
+          config.translationX -= velocidade
+        
+        if (listOfAnimation[0].animation == 1)
+          config.translationY -= velocidade
+        
+        if (listOfAnimation[0].animation == 2)
+          config.translationZ -= velocidade
+      }
+    }
+  } else if (selectedType === 'rotation') {
+    if (listOfAnimation[0].position > 0) {
+      if (nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] >= listOfAnimation[0].total) {
+        listOfAnimation.shift()
+        if (listOfAnimation.length > 0) {
+          listOfAnimation[0].total = nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] + listOfAnimation[0].position
+          if (type == 0)
+            config.isAnimation = true
+          else
+            config.allAnimation = true
+        } else {
+          if (type == 0)
+            config.isAnimation = false
+          else
+            config.allAnimation = false
+        }
+      
+      } else {
+        if (listOfAnimation[0].animation == 0) {
+          config.rotationX +=  velocidade
+        }
+
+        if (listOfAnimation[0].animation == 1)
+          config.rotationY += velocidade
+
+        if (listOfAnimation[0].animation == 2)
+          config.rotationZ += velocidade
+      }
+    } else {
+      if (nodeInfosByName[selectedObject].trs.rotation[listOfAnimation[0].animation] <= listOfAnimation[0].total) {
+        listOfAnimation.shift()
+        if (listOfAnimation.length > 0) {
+          listOfAnimation[0].total = nodeInfosByName[selectedObject][selectedObject].trs.rotation[listOfAnimation[0].animation] + listOfAnimation[0].position
+          if (type == 0)
+          config.isAnimation = true
+        else
+          config.allAnimation = true
+        } else
+          if (type == 0)
+            config.isAnimation = false
+          else
+            config.allAnimation = false
+      } else {
+        if (listOfAnimation[0].animation == 0)
+          config.rotationX -= velocidade
+
+        if (listOfAnimation[0].animation == 1)
+          config.rotationY -= velocidade
+        
+        if (listOfAnimation[0].animation == 2)
+          config.rotationZ -= velocidade
+      }
+    }
+  } 
+
+  if (type == 0) {
+    if (config.isAnimation == false && listOfAnimation.length > 0) {
+      config.isAnimation = true
+    } else {
+      if (config.isAnimation == false) {
+        isFirstAnimation = true
+        gui.destroy();
+        gui = null
+      }
+    }
+  } else {
+    if (config.allAnimation == false && listOfAnimation.length > 0) {
+      config.allAnimation = true
+    } else {
+      if (config.allAnimation == false) {
+        isFirstAnimation = true
+        gui.destroy();
+        gui = null
+      }
+    }
+  }
 }
