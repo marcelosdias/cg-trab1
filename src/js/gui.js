@@ -61,6 +61,13 @@ const config = {
   isAnimation: false,
   allAnimation: false,
 
+  lightX: 0,
+  lightY: 0,
+  lightZ: 100,
+  Shininess: 300,
+  lightColor: [1, 1, 1, 1],
+  specularColor: [1, 1, 1, 1],
+
   Cube: () => {
     const updatedValues = sceneDescription.children.map(item => {
       let name = item.name
@@ -307,9 +314,6 @@ const loadGUI = () => {
     animations.add(config, 'playAnimation')
     animations.add(config, 'playAllAnimation')
 
-
-    animations.closed = false
-
   const createVertice = allObjects.addFolder('Criar Vértices')
     createVertice.add(settings,'barycentric').onChange(newValue => {
       barycentric = newValue
@@ -350,8 +354,6 @@ const loadGUI = () => {
 
     createVertice.add(settings, "selectedTriangle", listOfTriangles).onChange(event => settings.selectedTriangle = event)
     createVertice.add(config, "createVertice")
-
-    createVertice.closed = false
 
   camera = arrayCameras[indexCamera]
 
@@ -399,6 +401,15 @@ const loadGUI = () => {
       vertices.add(config, "verticeY", -10, 10, 0.5);
       vertices.add(config, "verticeZ", -10, 10, 0.5);
 
-      vertices.closed = false
+  const lightFolder = gui.addFolder('Luz')
+    lightFolder.add(config, 'lightX', -50, 50, 1);
+    lightFolder.add(config, "lightY", -50, 50, 1);
+    lightFolder.add(config, "lightZ", 50, 150, 1);
+    lightFolder.add(config, "Shininess", 0, 1000, 1);
+    lightFolder.addColor(config, 'lightColor');
+    lightFolder.addColor(config, 'specularColor');
+
+
 }
+
 

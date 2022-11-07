@@ -297,11 +297,15 @@ function main(option = 0) {
 
         object.drawInfo.uniforms.u_color =  [0.2, 1, 0.2, 1]
 
-        object.drawInfo.uniforms.u_lightWorldPosition = [0, 0, 100]
+        object.drawInfo.uniforms.u_lightWorldPosition = [config.lightX, config.lightY, config.lightZ]
 
         object.drawInfo.uniforms.u_viewWorldPosition = convertObjectToArray(arrayCameras[indexCamera].cameraPosition)
 
-        object.drawInfo.uniforms.u_shininess = 300 
+        object.drawInfo.uniforms.u_shininess = config.Shininess 
+
+        object.drawInfo.uniforms.u_lightColor = m4.normalize(config.lightColor)
+        object.drawInfo.uniforms.u_specularColor = m4.normalize(config.specularColor)
+
     });
 
     twgl.drawObjectList(gl, objectsToDraw);

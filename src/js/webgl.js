@@ -51,6 +51,8 @@ in vec3 v_surfaceToView;
 
 uniform vec4 u_color;
 uniform float u_shininess;
+uniform vec3 u_lightColor;
+uniform vec3 u_specularColor;
 
 // we need to declare an output for the fragment shader
 out vec4 outColor;
@@ -77,10 +79,10 @@ void main() {
 
   // Lets multiply just the color portion (not the alpha)
   // by the light
-  outColor.rgb *= light;
+  outColor.rgb *= light * u_lightColor;
 
   // Just add in the specular
-  outColor.rgb += specular;
+  outColor.rgb += specular * u_specularColor;
 }
 `;
 
